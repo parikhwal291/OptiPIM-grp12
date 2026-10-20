@@ -193,9 +193,11 @@ def main():
 
     # 3. analytical vs simulator
     if args.sim and Path(args.sim).exists():
-        sim = pd.read_csv(args.sim).rename(columns={"target": "device"})
-        sim = sim[sim["mapper"] == "optipim"].dropna(subset=["simulated_cycles"])
-        sim = sim.set_index(["operator", "device"])["simulated_cycles"]
+        simall = pd.read_csv(args.sim).rename(columns={"target": "device"})
+        simall = simall.dropna(subset=["simulated_cycles"])
+        # sim_check.sh names the heuristic runs "heuristic" (or heuristic_1)
+        is_h = simall["mapper"].isin(["heuristic", args.baseline])
+        sim = simall[simall["mapper"] == "optipim"].set_index(["operator", "device"])["simulated_cycles"]
         summary["simulated_cycles"] = sim
         r = (sim / piv["optipim"]).dropna().rename("sim_over_analytical")
         summary["sim_over_analytical"] = r
@@ -203,6 +205,34 @@ def main():
         ratio_figure(t.reindex(columns=DEVICES), "simulator cycles / analytical cost",
                      "Analytical model vs Ramulator2 (1 = exact)",
                      out / "analytical_vs_sim.png")
+        # heuristic mappings replayed in the simulator: simulated speedup
+        hs = simall[is_h].drop_duplicates(["operator", "device"], keep="last")
+        hs = hs.set_index(["operator", "device"])["simulated_cycles"]
+        if len(hs):
+            summary["simulated_cycles_heuristic"] = hs
+            summary["sim_speedup_vs_heuristic"] = (hs / sim).dropna()
+            if args.baseline in piv:
+                summary["sim_over_analytical_heuristic"] = (hs / piv[args.baseline]).dropna()
+            both = pd.DataFrame({"model": summary[f"speedup_vs_{args.baseline}"],
+                                 "simulator": summary["sim_speedup_vs_heuristic"]}).dropna()
+            if len(both):
+                fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.2), sharey=True)
+                for ax, dev in zip(axes, DEVICES):
+                    if dev not in both.index.get_level_values("device"):
+                        ax.set_visible(False)
+                        continue
+                    d = both.xs(dev, level="device").reindex([o for o in ops if o in both.xs(dev, level="device").index])
+                    grouped_bars(ax, d, {"model": "#2a78d6", "simulator": "#eb6834"},
+                                 fmt=lambda v: f"{v:.2f}x")
+                    ax.axhline(1.0, color=INK2, linestyle="--", linewidth=1)
+                    ax.set_yscale("log")
+                    ax.set_title(DEVICE_LABEL[dev], color=INK, fontsize=10)
+                    style(ax)
+                axes[0].set_ylabel("OptiPIM speedup over heuristic (log)", color=INK2, fontsize=8)
+                axes[-1].legend(frameon=False, fontsize=8)
+                fig.tight_layout()
+                fig.savefig(out / "speedup_model_vs_sim.png", dpi=200)
+                plt.close(fig)
     else:
         print(f"note: no simulator file ({args.sim}); skipped analytical_vs_sim.png")
 
