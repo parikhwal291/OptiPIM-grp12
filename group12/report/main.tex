@@ -29,8 +29,9 @@ weight-parallel heuristic by 27--34$\times$ on HBM-PIM convolutions and by
 1.1--2.5$\times$ on SIMDRAM, matching the paper's trend. It loses on one
 HBM-PIM matrix multiplication (0.78$\times$), which we trace to the mapping using
 24 of 32 banks; the ILP objective there is two orders of magnitude below the
-analytical cost. The analytical model tracks the simulator within 2.1\% on
-HBM-PIM but underestimates SIMDRAM by 38--76\%. We also found that
+analytical cost; replaying both mappings in the simulator confirms the loss
+(0.79$\times$). The analytical model tracks the simulator within 2.7\% on
+HBM-PIM but underestimates SIMDRAM by 13--116\%. We also found that
 \texttt{pim-opt} writes stride and dilation in the opposite order to the
 authors' scorer. \fillin{One sentence on the extension and its result.}
 \end{abstract}
@@ -231,8 +232,9 @@ M2 & 221{,}184 & 614{,}400 & 2.78 & 3{,}257{,}727 & 7{,}769{,}472 & 2.38 \\
 \textbf{Where OptiPIM loses: M1 on HBM-PIM.} An ILP solved to optimality cannot
 lose to a heuristic if both are judged by the ILP's own cost, yet under the
 analytical model OptiPIM's M1 mapping is 1.27$\times$ slower than the
-heuristic's, and the simulator confirms the OptiPIM figure (1{,}082{,}667
-cycles, 1.7\% above the model). The cost breakdown pinpoints the reason: the
+heuristic's. The simulator agrees: it needs 1{,}082{,}667 cycles for the
+OptiPIM mapping and 853{,}291 for the heuristic's, a ratio of 0.79$\times$
+(model: 0.78$\times$). The cost breakdown pinpoints the reason: the
 OptiPIM mapping uses 24 of the 32 banks, while the heuristic uses all 32. Its compute term is identical to
 the heuristic's (147{,}456), and its input loading (524{,}288 vs 393{,}216) and
 weight loading (393{,}216 vs 294{,}912) are both exactly $32/24=4/3$ larger,
@@ -240,8 +242,7 @@ which accounts for the whole gap. The ILP still preferred this mapping because
 its HBM-PIM objective for M1 is only 9{,}888, about 108$\times$ below the
 analytical cost (Section~\ref{sec:objcheck}), so it does not see the loading
 costs that the extra banks would have reduced. We have not confirmed in the
-ILP source which terms are missing, and we have not replayed the heuristic's
-M1 mapping in the simulator.
+ILP source which terms are missing.
 
 \subsection{Cost breakdown}
 Fig.~\ref{fig:breakdown} splits each analytical cost into the terms the model
@@ -277,20 +278,43 @@ in different units from the Python model; we therefore compare ratios only.
 
 \subsection{Analytical model versus simulator}
 \label{sec:simcheck}
-We replayed the OptiPIM mappings of C3, M1 and M2 in Ramulator2
-(Fig.~\ref{fig:sim}, Table~\ref{tab:sim}). On HBM-PIM the model is within 2.1\%
-of the simulator, consistent with the paper's Fig.~9. On SIMDRAM the model
-consistently underestimates the simulator, by 38--76\%. The authors' own
+We replayed the OptiPIM and the heuristic mapping of all five operators on
+both targets (20 mappings) in Ramulator2 (Fig.~\ref{fig:sim},
+Table~\ref{tab:sim}). On HBM-PIM the model is within 2.7\% of the simulator for
+all ten mappings replayed, consistent with the paper's Fig.~9. On SIMDRAM the
+model underestimates the simulator for every mapping, by 13\% to 116\%, and by
+different amounts for the two mappers (e.g.\ 41\% for OptiPIM but 13\% for the
+heuristic on M1, but 97\% against 33\% on C1), so the error is not a constant
+factor. The largest gaps are the two $3{\times}3$ convolutions: the simulator reports the same 52{,}540{,}980
+cycles for C1 and C2, matching the identical ILP objective of their mappings
+(23{,}273{,}702), while the model scores C1 10\% higher than C2. The authors' own
 validation data (\texttt{exp\_results/fig9}) agrees within a few percent on
 SIMDRAM, so the gap is specific to our mappings or our simulator build; we did
-not find its cause. C1 and C2 were not simulated because their traces take
-very long to replay.
+not find its cause.
+
+The simulator also lets us check the speedups of Table~\ref{tab:speedup}. On
+HBM-PIM they agree: 33.0$\times$ (C1), 26.4$\times$ (C2), 26.4$\times$ (C3),
+0.79$\times$ (M1) and 2.75$\times$ (M2) against 33.9$\times$, 26.9$\times$,
+26.9$\times$, 0.78$\times$ and 2.78$\times$ from the model. On SIMDRAM OptiPIM is
+still faster for all five operators, but by 1.66$\times$ (C1), 1.13$\times$ (C2),
+1.34$\times$ (C3), 1.29$\times$ (M1) and 1.88$\times$ (M2) instead of
+2.45$\times$, 1.50$\times$, 1.13$\times$, 1.61$\times$ and 2.39$\times$ (geometric
+mean 1.44$\times$ instead of 1.74$\times$), so the model gets the direction right
+but not the size of the gain.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.85\textwidth]{figs/speedup_model_vs_sim.png}
+\caption{OptiPIM speedup over the heuristic according to the analytical model
+and to the Ramulator2 simulator (log scale).}
+\label{fig:simspeedup}
+\end{figure*}
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/analytical_vs_sim.png}
 \caption{Simulator cycles divided by analytical cost for OptiPIM mappings
-(1 = exact agreement).}
+(1 = exact agreement). The heuristic mappings are in Table~\ref{tab:sim}.}
 \label{fig:sim}
 \end{figure}
 
@@ -301,14 +325,28 @@ very long to replay.
 \footnotesize
 \begin{tabular}{llrrr}
 \toprule
-Op & Target & Model & Simulator & Diff. \\
+Op, mapper & Target & Model & Simulator & Diff. \\
 \midrule
-C3 & HBM-PIM & 121{,}856 & 124{,}464 & $+2.1\%$ \\
-M1 & HBM-PIM & 1{,}064{,}960 & 1{,}082{,}667 & $+1.7\%$ \\
-M2 & HBM-PIM & 221{,}184 & 224{,}061 & $+1.3\%$ \\
-C3 & SIMDRAM & 3{,}575{,}824 & 4{,}919{,}252 & $+37.6\%$ \\
-M1 & SIMDRAM & 15{,}443{,}838 & 21{,}804{,}288 & $+41.2\%$ \\
-M2 & SIMDRAM & 3{,}257{,}727 & 5{,}725{,}248 & $+75.8\%$ \\
+C1 OptiPIM & HBM-PIM & 870{,}912 & 894{,}779 & $+2.7\%$ \\
+C2 OptiPIM & HBM-PIM & 1{,}096{,}704 & 1{,}120{,}256 & $+2.1\%$ \\
+C1 heuristic & HBM-PIM & 29{,}546{,}496 & 29{,}529{,}983 & $-0.1\%$ \\
+C2 heuristic & HBM-PIM & 29{,}546{,}496 & 29{,}529{,}983 & $-0.1\%$ \\
+C3 OptiPIM & HBM-PIM & 121{,}856 & 124{,}464 & $+2.1\%$ \\
+C3 heuristic & HBM-PIM & 3{,}282{,}944 & 3{,}281{,}117 & $-0.1\%$ \\
+M1 OptiPIM & HBM-PIM & 1{,}064{,}960 & 1{,}082{,}667 & $+1.7\%$ \\
+M1 heuristic & HBM-PIM & 835{,}584 & 853{,}291 & $+2.1\%$ \\
+M2 OptiPIM & HBM-PIM & 221{,}184 & 224{,}061 & $+1.3\%$ \\
+M2 heuristic & HBM-PIM & 614{,}400 & 616{,}797 & $+0.4\%$ \\
+C1 OptiPIM & SIMDRAM & 26{,}701{,}846 & 52{,}540{,}980 & $+96.8\%$ \\
+C2 OptiPIM & SIMDRAM & 24{,}338{,}662 & 52{,}540{,}980 & $+115.9\%$ \\
+C1 heuristic & SIMDRAM & 65{,}549{,}429 & 87{,}405{,}433 & $+33.3\%$ \\
+C2 heuristic & SIMDRAM & 36{,}395{,}701 & 59{,}496{,}616 & $+63.5\%$ \\
+C3 OptiPIM & SIMDRAM & 3{,}575{,}824 & 4{,}919{,}252 & $+37.6\%$ \\
+C3 heuristic & SIMDRAM & 4{,}053{,}173 & 6{,}612{,}996 & $+63.2\%$ \\
+M1 OptiPIM & SIMDRAM & 15{,}443{,}838 & 21{,}804{,}288 & $+41.2\%$ \\
+M1 heuristic & SIMDRAM & 24{,}881{,}280 & 28{,}097{,}818 & $+12.9\%$ \\
+M2 OptiPIM & SIMDRAM & 3{,}257{,}727 & 5{,}725{,}248 & $+75.8\%$ \\
+M2 heuristic & SIMDRAM & 7{,}769{,}472 & 10{,}739{,}994 & $+38.2\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -349,7 +387,9 @@ M2 & 3{,}040 & 221{,}184 & 2{,}471{,}295 & 3{,}257{,}727 \\
 \begin{itemize}
 \item HBM-PIM M1: OptiPIM 0.78$\times$ the heuristic because it uses 24 of 32
 banks; the ILP objective does not reflect the loading costs (above).
-\item SIMDRAM model-vs-simulator gap of 38--76\%, not seen in the paper.
+\item SIMDRAM model-vs-simulator gap of 13--116\%, not seen in the paper, and
+different for the two mappers, so the model also misjudges the size of the
+SIMDRAM speedups.
 \item Smaller C1 gain (34$\times$ vs about 100$\times$); the paper's Fig.~12
 costs are in different units, and its mapping uses 16 banks.
 \item Gurobi 13.0.3 instead of 11.0.3, with presolve disabled; with several
@@ -393,9 +433,9 @@ HBM-PIM; \fillin{state whether the ILP results confirm this}.
 \begin{itemize}
 \item \textbf{No real hardware.} All cycle counts come from the analytical
 model and the authors' Ramulator2-based simulator.
-\item \textbf{Few simulator points.} Only C3, M1 and M2 (OptiPIM mappings) were
-replayed; no heuristic mapping was simulated, so the speedups rest on the
-analytical model, which we found reliable on HBM-PIM only.
+\item \textbf{Few simulator points.} We simulated 20 mappings (two per operator
+and target), against the paper's 12{,}000 random mappings, and one run each, so
+we cannot report an $R^2$ comparable to the paper's.
 \item \textbf{Unexplained gaps.} The SIMDRAM model-vs-simulator gap and the
 ILP-objective-vs-model gap on HBM-PIM are measured but not explained.
 \item \textbf{Different solver version and machine.} Gurobi 13.0.3 with
