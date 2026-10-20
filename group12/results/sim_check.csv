@@ -5,3 +5,17 @@ M1,hbmpim,optipim,1082667,17
 M1,simdram,optipim,21804288,49
 C3,hbmpim,optipim,124464,3
 C3,simdram,optipim,4919252,12
+M1,hbmpim,heuristic,853291,18
+M1,simdram,heuristic,28097818,78
+C1,hbmpim,optipim,894779,31
+M2,hbmpim,heuristic,616797,7
+M2,simdram,heuristic,10739994,33
+C3,hbmpim,heuristic,3281117,19
+C3,simdram,heuristic,6612996,28
+C1,hbmpim,heuristic,29529983,154
+C1,simdram,optipim,52540980,209
+C2,hbmpim,optipim,1120256,32
+C1,simdram,heuristic,87405433,261
+C2,simdram,optipim,52540980,199
+C2,hbmpim,heuristic,29529983,142
+C2,simdram,heuristic,59496616,212
