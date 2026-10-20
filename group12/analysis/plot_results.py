@@ -93,6 +93,60 @@ def ratio_figure(table, ylabel, title, path, ref=1.0, log=False, fmt="{:.2f}"):
     plt.close(fig)
 
 
+PART_COLOR = {"input loading": "#6250d6", "weight loading": "#e87ba4",
+              "output": "#008300", "compute": "#eda100"}
+
+
+def breakdown(row):
+    """Split the model's total the way analytical.py adds it up.
+    HBM-PIM: input loading + weight (filter) loading + row activations (compute).
+    SIMDRAM: input loading + output transfer + bit-serial mul/add (compute)."""
+    inp = row["inLoadingCost"]
+    if row["device"] == "hbmpim":
+        w, o = row["numFilPELoading"], 0.0
+    else:
+        w, o = 0.0, row["outTransCost"]
+    return {"input loading": inp, "weight loading": w, "output": o,
+            "compute": row["cost"] - inp - w - o}
+
+
+def plot_breakdown(sc, ops, baseline, path):
+    sel = sc[sc["mapper"].isin(["optipim", baseline])].copy()
+    parts = pd.DataFrame([breakdown(r) for _, r in sel.iterrows()], index=sel.index)
+    sel = pd.concat([sel, parts], axis=1)
+    fig, axes = plt.subplots(1, 2, figsize=(8.4, 3.4), sharey=True)
+    for ax, dev in zip(axes, DEVICES):
+        d = sel[sel["device"] == dev]
+        xs, labels = [], []
+        for j, op in enumerate(ops):
+            for k, m in enumerate(["optipim", baseline]):
+                r = d[(d["operator"] == op) & (d["mapper"] == m)]
+                if r.empty:
+                    continue
+                r = r.iloc[0]
+                x = j * 2.6 + k * 1.05
+                bottom = 0.0
+                for p, c in PART_COLOR.items():
+                    share = 100 * r[p] / r["cost"]
+                    ax.bar(x, share, bottom=bottom, width=0.95, color=c,
+                           edgecolor="white", linewidth=0.6,
+                           label=p if (j == 0 and k == 0) else None)
+                    bottom += share
+                xs.append(x)
+                labels.append(f"{op}\n{'Opt' if m == 'optipim' else 'Heu'}")
+        ax.set_xticks(xs)
+        ax.set_xticklabels(labels, fontsize=6.5)
+        ax.set_ylim(0, 100)
+        ax.set_title(DEVICE_LABEL[dev], color=INK, fontsize=10)
+        style(ax)
+    axes[0].set_ylabel("share of analytical cost (%)", color=INK2, fontsize=8)
+    handles, names = axes[0].get_legend_handles_labels()
+    fig.legend(handles, names, loc="lower center", ncol=4, frameon=False, fontsize=8)
+    fig.tight_layout(rect=(0, 0.08, 1, 1))
+    fig.savefig(path, dpi=200)
+    plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -167,6 +221,10 @@ def main():
     else:
         print(f"note: no solve-times file ({args.solve_times}); "
               "skipped objective_vs_model.png")
+
+    # 5. cost breakdown (share of total), OptiPIM vs the baseline heuristic
+    if {"inLoadingCost", "outTransCost", "numFilPELoading"} <= set(sc.columns):
+        plot_breakdown(sc, ops, args.baseline, out / "cost_breakdown.png")
 
     summary = summary.reset_index()
     summary["_o"] = summary["operator"].map({o: i for i, o in enumerate(ops)})
