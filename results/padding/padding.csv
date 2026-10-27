@@ -1,0 +1,145 @@
+layer,device,variant,real_cost,solver_seconds,banks,bounds,mac_overhead,proxy_steps,status,presolve
+alexnet.l0.conv0,simdram,unpadded,,2,32,N=1 K=64 P=55 Q=55 C=3 R=11 S=11,0.0000,275.0,no_objective,Gurobi default
+alexnet.l0.conv0,simdram,pad_P56_Q56,3.018868e+07,2,32,N=1 K=64 P=56 Q=56 C=3 R=11 S=11,0.0367,294.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K70_P56_Q56,2.845895e+07,2,32,N=1 K=70 P=56 Q=56 C=3 R=11 S=11,0.1339,308.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K72,3.699603e+07,1,32,N=1 K=72 P=55 Q=55 C=3 R=11 S=11,0.1250,330.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_P60_Q60,3.563973e+07,13,32,N=1 K=64 P=60 Q=60 C=3 R=11 S=11,0.1901,330.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K75_P56_Q56,3.008517e+07,4,32,N=1 K=75 P=56 Q=56 C=3 R=11 S=11,0.2149,330.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K72_P56_Q56,5.432213e+07,8,32,N=1 K=72 P=56 Q=56 C=3 R=11 S=11,0.1663,336.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K80_P56_Q56,3.171139e+07,8,32,N=1 K=80 P=56 Q=56 C=3 R=11 S=11,0.2959,352.0,ok,Gurobi default
+alexnet.l0.conv0,simdram,pad_K70,3.737218e+07,1,32,N=1 K=70 P=55 Q=55 C=3 R=11 S=11,0.0938,385.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,unpadded,3.270838e+07,1,32,N=1 K=384 P=13 Q=13 C=192 R=3 S=3,0.0000,432.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_C196,4.729312e+07,1,32,N=1 K=384 P=13 Q=13 C=196 R=3 S=3,0.0208,441.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_K392,3.726243e+07,1,32,N=1 K=392 P=13 Q=13 C=192 R=3 S=3,0.0208,441.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_C200,4.777734e+07,1,32,N=1 K=384 P=13 Q=13 C=200 R=3 S=3,0.0417,450.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_K400,3.387654e+07,1,32,N=1 K=400 P=13 Q=13 C=192 R=3 S=3,0.0417,450.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_K392_C200,1.108964e+08,1,32,N=1 K=392 P=13 Q=13 C=200 R=3 S=3,0.0634,455.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_K400_C196,1.108964e+08,1,32,N=1 K=400 P=13 Q=13 C=196 R=3 S=3,0.0634,455.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_K400_C200,4.878614e+07,1,32,N=1 K=400 P=13 Q=13 C=200 R=3 S=3,0.0851,468.0,ok,Gurobi default
+alexnet.l2.conv2,simdram,pad_C210,4.898790e+07,1,32,N=1 K=384 P=13 Q=13 C=210 R=3 S=3,0.0938,468.0,ok,Gurobi default
+vit.attn_qk,simdram,unpadded,3.935174e+07,0,32,N=12 P=197 Q=64 R=197,0.0000,197.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_R200,1.019960e+07,0,32,N=12 P=197 Q=64 R=200,0.0152,120.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P200,1.171256e+07,1,32,N=12 P=200 Q=64 R=197,0.0152,120.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P200_R200,1.026296e+07,9,32,N=12 P=200 Q=64 R=200,0.0307,120.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P200_R210,7.984170e+06,11,32,N=12 P=200 Q=64 R=210,0.0822,125.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P210_R200,7.979796e+06,11,32,N=12 P=210 Q=64 R=200,0.0822,125.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_R210,2.221821e+07,1,32,N=12 P=197 Q=64 R=210,0.0660,126.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P210,2.410941e+07,1,32,N=12 P=210 Q=64 R=197,0.0660,126.0,ok,Gurobi default
+vit.attn_qk,simdram,pad_P200_R216,8.022996e+06,13,32,N=12 P=200 Q=64 R=216,0.1131,128.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,unpadded,9.013648e+07,59,32,N=1 K=192 P=27 Q=27 C=64 R=5 S=5,0.0000,864.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_K196,6.705083e+07,27,32,N=1 K=196 P=27 Q=27 C=64 R=5 S=5,0.0208,882.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_K200,6.749147e+07,49,32,N=1 K=200 P=27 Q=27 C=64 R=5 S=5,0.0417,900.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_C70,9.285686e+07,24,32,N=1 K=192 P=27 Q=27 C=70 R=5 S=5,0.0938,945.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_K210,1.018338e+08,60,32,N=1 K=210 P=27 Q=27 C=64 R=5 S=5,0.0938,945.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_P28_Q28,7.255358e+07,63,32,N=1 K=192 P=28 Q=28 C=64 R=5 S=5,0.0754,960.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_C72,9.793386e+07,139,32,N=1 K=192 P=27 Q=27 C=72 R=5 S=5,0.1250,972.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_K216,1.209666e+08,54,32,N=1 K=216 P=27 Q=27 C=64 R=5 S=5,0.1250,972.0,ok,Gurobi default
+alexnet.l1.conv1,simdram,pad_K196_P28_Q28,7.897555e+07,57,32,N=1 K=196 P=28 Q=28 C=64 R=5 S=5,0.0979,980.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,unpadded,8.915764e+06,0,32,P=1 Q=9216 R=4096,0.0000,144.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_R4116,2.002348e+07,0,32,P=1 Q=9216 R=4116,0.0049,147.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_Q9261,1.006458e+07,0,32,P=1 Q=9261 R=4096,0.0049,147.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_Q9408,1.010631e+07,0,32,P=1 Q=9408 R=4096,0.0208,147.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_Q9375,9.297326e+06,0,32,P=1 Q=9375 R=4096,0.0173,150.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_R4200,1.408299e+07,1,32,P=1 Q=9216 R=4200,0.0254,150.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_Q9450,9.311022e+06,0,32,P=1 Q=9450 R=4096,0.0254,150.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_Q9600,9.338414e+06,0,32,P=1 Q=9600 R=4096,0.0417,150.0,ok,Gurobi default
+alexnet.l5.fc0,simdram,pad_R4320,9.826569e+06,1,32,P=1 Q=9216 R=4320,0.0547,160.0,ok,Gurobi default
+vit.qkv,simdram,unpadded,2.577587e+08,0,32,P=197 Q=768 R=2304,0.0000,1536.0,ok,Gurobi default
+vit.qkv,simdram,pad_P200,1.292552e+08,5,32,P=200 Q=768 R=2304,0.0152,1350.0,ok,Gurobi default
+vit.qkv,simdram,pad_R2352,4.257842e+08,0,32,P=197 Q=768 R=2352,0.0208,1379.0,ok,Gurobi default
+vit.qkv,simdram,pad_Q784,2.615033e+08,0,32,P=197 Q=784 R=2304,0.0208,1379.0,ok,Gurobi default
+vit.qkv,simdram,pad_P200_R2352,1.188385e+08,6,32,P=200 Q=768 R=2352,0.0364,1400.0,ok,Gurobi default
+vit.qkv,simdram,pad_P200_Q784,1.020681e+08,4,32,P=200 Q=784 R=2304,0.0364,1400.0,ok,Gurobi default
+vit.qkv,simdram,pad_R2400,2.652479e+08,0,32,P=197 Q=768 R=2400,0.0417,1440.0,ok,Gurobi default
+vit.qkv,simdram,pad_Q800,2.652479e+08,0,32,P=197 Q=800 R=2304,0.0417,1440.0,ok,Gurobi default
+vit.qkv,simdram,pad_P200_R2400,8.962590e+07,9,32,P=200 Q=768 R=2400,0.0575,1440.0,ok,Gurobi default
+gpt2.lm_head,simdram,unpadded,1.525671e+07,0,32,P=1 Q=768 R=50257,0.0000,174.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R50400,1.408299e+07,2,32,P=1 Q=768 R=50400,0.0028,150.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R50625,1.411222e+07,0,32,P=1 Q=768 R=50625,0.0073,150.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R51200,1.418693e+07,0,32,P=1 Q=768 R=51200,0.0188,150.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R51840,9.826569e+06,1,32,P=1 Q=768 R=51840,0.0315,160.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_Q784_R51200,1.083349e+07,0,32,P=1 Q=784 R=51200,0.0400,160.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R52500,9.848745e+06,0,32,P=1 Q=768 R=52500,0.0446,160.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_Q800_R50400,9.724932e+06,2,32,P=1 Q=800 R=50400,0.0446,160.0,ok,Gurobi default
+gpt2.lm_head,simdram,pad_R52920,9.862857e+06,1,32,P=1 Q=768 R=52920,0.0530,160.0,ok,Gurobi default
+resnet50.conv5,simdram,unpadded,5.628528e+07,1,32,N=1 K=512 P=7 Q=7 C=512 R=3 S=3,0.0000,441.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_C540,4.545828e+07,2,32,N=1 K=512 P=7 Q=7 C=540 R=3 S=3,0.0547,480.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_K540,3.582118e+07,1,32,N=1 K=540 P=7 Q=7 C=512 R=3 S=3,0.0547,480.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_C525,4.490052e+07,1,32,N=1 K=512 P=7 Q=7 C=525 R=3 S=3,0.0254,490.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_K525,6.990826e+07,1,32,N=1 K=525 P=7 Q=7 C=512 R=3 S=3,0.0254,490.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_C560,4.620196e+07,1,32,N=1 K=512 P=7 Q=7 C=560 R=3 S=3,0.0938,490.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_K560,4.620196e+07,1,32,N=1 K=560 P=7 Q=7 C=512 R=3 S=3,0.0938,490.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_C567,4.646225e+07,0,32,N=1 K=512 P=7 Q=7 C=567 R=3 S=3,0.1074,504.0,ok,Gurobi default
+resnet50.conv5,simdram,pad_K567,7.346449e+07,0,32,N=1 K=567 P=7 Q=7 C=512 R=3 S=3,0.1074,504.0,ok,Gurobi default
+alexnet.l0.conv0,hbmpim,unpadded,1.685530e+06,1,32,N=1 K=64 P=55 Q=55 C=3 R=11 S=11,0.0000,146410.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_P56_Q56,6.645680e+05,29,32,N=1 K=64 P=56 Q=56 C=3 R=11 S=11,0.0367,142296.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K72_P56_Q56,6.848070e+05,53,32,N=1 K=72 P=56 Q=56 C=3 R=11 S=11,0.1663,160083.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_P60_Q60,8.967900e+05,103,32,N=1 K=64 P=60 Q=60 C=3 R=11 S=11,0.1901,163350.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K70_P56_Q56,1.321234e+06,1,32,N=1 K=70 P=56 Q=56 C=3 R=11 S=11,0.1339,166012.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K72,,3,32,N=1 K=72 P=55 Q=55 C=3 R=11 S=11,0.1250,175692.0,no_objective,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K75_P56_Q56,1.334296e+06,1,32,N=1 K=75 P=56 Q=56 C=3 R=11 S=11,0.2149,177870.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K80_P56_Q56,7.050460e+05,45,32,N=1 K=80 P=56 Q=56 C=3 R=11 S=11,0.2959,177870.0,ok,off (gurobi.env)
+alexnet.l0.conv0,hbmpim,pad_K70,,0,32,N=1 K=70 P=55 Q=55 C=3 R=11 S=11,0.0938,204974.0,no_objective,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,unpadded,1.202896e+06,1,32,N=1 K=384 P=13 Q=13 C=192 R=3 S=3,0.0000,219024.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_C196,1.274420e+06,2,32,N=1 K=384 P=13 Q=13 C=196 R=3 S=3,0.0208,223587.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_K392,6.340030e+05,2,32,N=1 K=392 P=13 Q=13 C=192 R=3 S=3,0.0208,223587.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_C200,3.133200e+06,1,32,N=1 K=384 P=13 Q=13 C=200 R=3 S=3,0.0417,228150.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_K400,6.409820e+05,1,32,N=1 K=400 P=13 Q=13 C=192 R=3 S=3,0.0417,228150.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_K405,6.453439e+05,1,32,N=1 K=405 P=13 Q=13 C=192 R=3 S=3,0.0547,246402.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_C216,1.680258e+06,1,32,N=1 K=384 P=13 Q=13 C=216 R=3 S=3,0.1250,246402.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_K432,9.300420e+05,1,32,N=1 K=432 P=13 Q=13 C=192 R=3 S=3,0.1250,246402.0,ok,off (gurobi.env)
+alexnet.l2.conv2,hbmpim,pad_K392_C200,7.549011e+05,2,32,N=1 K=392 P=13 Q=13 C=200 R=3 S=3,0.0634,248430.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,unpadded,9.475700e+04,0,32,N=12 P=197 Q=64 R=197,0.0000,77618.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_R200,1.741400e+05,1,32,N=12 P=197 Q=64 R=200,0.0152,59100.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_P200,1.339070e+05,0,32,N=12 P=200 Q=64 R=197,0.0152,59100.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_P200_R200,1.098800e+05,23,32,N=12 P=200 Q=64 R=200,0.0307,60000.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_R210,1.781040e+05,1,32,N=12 P=197 Q=64 R=210,0.0660,62055.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_P210,1.402970e+05,1,32,N=12 P=210 Q=64 R=197,0.0660,62055.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_P200_R210,1.222450e+05,33,32,N=12 P=200 Q=64 R=210,0.0822,63000.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_P210_R200,1.194000e+05,30,32,N=12 P=210 Q=64 R=200,0.0822,63000.0,ok,off (gurobi.env)
+vit.attn_qk,hbmpim,pad_R216,1.711440e+05,3,32,N=12 P=197 Q=64 R=216,0.0964,63828.0,ok,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,unpadded,2.104344e+06,1,32,N=1 K=192 P=27 Q=27 C=64 R=5 S=5,0.0000,437400.0,ok,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_K200,1.628865e+06,1,32,N=1 K=200 P=27 Q=27 C=64 R=5 S=5,0.0417,455625.0,ok,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_P28_Q28,3.586728e+06,1,32,N=1 K=192 P=28 Q=28 C=64 R=5 S=5,0.0754,470400.0,ok,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_K196,,0,32,N=1 K=196 P=27 Q=27 C=64 R=5 S=5,0.0208,476280.0,no_objective,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_K196_P28_Q28,,1,32,N=1 K=196 P=28 Q=28 C=64 R=5 S=5,0.0979,480200.0,no_objective,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_K200_P28_Q28,,0,32,N=1 K=200 P=28 Q=28 C=64 R=5 S=5,0.1203,490000.0,no_objective,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_C72,,0,32,N=1 K=192 P=27 Q=27 C=72 R=5 S=5,0.1250,492075.0,no_objective,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_K216,,1,32,N=1 K=216 P=27 Q=27 C=64 R=5 S=5,0.1250,492075.0,no_objective,off (gurobi.env)
+alexnet.l1.conv1,hbmpim,pad_C70,1.904130e+06,1,32,N=1 K=192 P=27 Q=27 C=70 R=5 S=5,0.0938,510300.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,unpadded,1.256960e+05,1,32,P=1 Q=9216 R=4096,0.0000,73728.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_R4116,1.268400e+05,1,32,P=1 Q=9216 R=4116,0.0049,74088.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9261,2.580560e+05,0,32,P=1 Q=9261 R=4096,0.0049,74088.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9375,1.870240e+05,0,32,P=1 Q=9375 R=4096,0.0173,75000.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9408,2.615840e+05,1,32,P=1 Q=9408 R=4096,0.0208,75264.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_R4200,1.292640e+05,4,32,P=1 Q=9216 R=4200,0.0254,75600.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9450,1.882240e+05,1,32,P=1 Q=9450 R=4096,0.0254,75600.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9600,1.906240e+05,1,32,P=1 Q=9600 R=4096,0.0417,76800.0,ok,off (gurobi.env)
+alexnet.l5.fc0,hbmpim,pad_Q9604,1.643360e+05,0,32,P=1 Q=9604 R=4096,0.0421,76832.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,unpadded,5.763840e+05,1,32,P=197 Q=768 R=2304,0.0000,680832.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_P200,5.477520e+05,8,32,P=200 Q=768 R=2304,0.0152,691200.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_R2352,6.201720e+05,1,32,P=197 Q=768 R=2352,0.0208,695016.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_Q784,7.064840e+05,1,32,P=197 Q=784 R=2304,0.0208,695016.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_P200_R2352,6.294960e+05,9,32,P=200 Q=768 R=2352,0.0364,705600.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_P200_Q784,7.171520e+05,6,32,P=200 Q=784 R=2304,0.0364,705600.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_R2400,5.909440e+05,2,32,P=197 Q=768 R=2400,0.0417,709200.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_Q800,6.765680e+05,1,32,P=197 Q=800 R=2304,0.0417,709200.0,ok,off (gurobi.env)
+vit.qkv,hbmpim,pad_R2430,6.739380e+05,1,32,P=197 Q=768 R=2430,0.0547,718065.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,unpadded,1.842235e+05,0,32,P=1 Q=768 R=50257,0.0000,83184.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R50400,1.292640e+05,7,32,P=1 Q=768 R=50400,0.0028,75600.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R51030,1.320030e+05,2,32,P=1 Q=768 R=51030,0.0154,76545.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R51200,1.314880e+05,1,32,P=1 Q=768 R=51200,0.0188,76800.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R51450,1.551410e+05,1,32,P=1 Q=768 R=51450,0.0237,77175.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_Q784_R50400,1.321810e+05,5,32,P=1 Q=784 R=50400,0.0237,77175.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R51840,1.333140e+05,4,32,P=1 Q=768 R=51840,0.0315,77760.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_Q784_R51200,1.669260e+05,2,32,P=1 Q=784 R=51200,0.0400,78400.0,ok,off (gurobi.env)
+gpt2.lm_head,hbmpim,pad_R52488,1.357560e+05,1,32,P=1 Q=768 R=52488,0.0444,78732.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,unpadded,6.588160e+05,1,32,N=1 K=512 P=7 Q=7 C=512 R=3 S=3,0.0000,225792.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_C525,6.880200e+05,1,32,N=1 K=512 P=7 Q=7 C=525 R=3 S=3,0.0254,231525.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_K525,9.638510e+05,1,32,N=1 K=525 P=7 Q=7 C=512 R=3 S=3,0.0254,231525.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_C540,7.064160e+05,30,32,N=1 K=512 P=7 Q=7 C=540 R=3 S=3,0.0547,238140.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_K540,9.720360e+05,1,32,N=1 K=540 P=7 Q=7 C=512 R=3 S=3,0.0547,238140.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_C560,7.162720e+05,1,32,N=1 K=512 P=7 Q=7 C=560 R=3 S=3,0.0938,246960.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_K560,6.842920e+05,1,32,N=1 K=560 P=7 Q=7 C=512 R=3 S=3,0.0938,246960.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_C567,1.233760e+06,1,32,N=1 K=512 P=7 Q=7 C=567 R=3 S=3,0.1074,250047.0,ok,off (gurobi.env)
+resnet50.conv5,hbmpim,pad_K567,9.867690e+05,1,32,N=1 K=567 P=7 Q=7 C=512 R=3 S=3,0.1074,250047.0,ok,off (gurobi.env)

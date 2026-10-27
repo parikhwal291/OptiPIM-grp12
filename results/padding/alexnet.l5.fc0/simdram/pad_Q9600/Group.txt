@@ -1,0 +1,13 @@
+gemm
+Problem: 1,1,1,9600,4096
+DilationStride: 1,1,1,1
+Loops: N,K,P,Q,R,N,K,P,Q,R,N,K,P,Q,R
+Bound: 1,1,1,8,4,1,1,1,75,2,1,1,1,16,512
+Tag: P,P,P,P,P,T,T,T,T,T,P,P,P,P,P
+StartBankRow: 0,0
+Coeff_N2,N0,N1: 1,1,1
+Coeff_K2,K0,K1: 1,1,1
+Coeff_P2,P0,P1: 1,1,1
+Coeff_Q2,Q0,Q1: 1200,1,75
+Coeff_R2,R0,R1: 1024,1,2
+end
