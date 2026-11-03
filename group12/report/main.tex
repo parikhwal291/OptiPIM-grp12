@@ -33,7 +33,7 @@ analytical cost; replaying both mappings in the simulator confirms the loss
 (0.79$\times$). The analytical model tracks the simulator within 2.7\% on
 HBM-PIM but underestimates SIMDRAM by 13--116\%. We also found that
 \texttt{pim-opt} writes stride and dilation in the opposite order to the
-authors' scorer. Finally, we address OptiPIM's perfect-factorization constraint through a zero-padding extension for awkward loop bounds, delivering up to 1.71$\times$ speedup on SIMDRAM and 10.97$\times$ on HBM-PIM for transformer attention layers.
+authors' scorer. Finally, we address OptiPIM's perfect-factorization constraint through a zero-padding extension for awkward loop bounds, which, for ViT attention, gives 1.71$\times$ (analytical model) and 1.40$\times$ (simulator) on SIMDRAM, and 10.97$\times$ (model) and 10.92$\times$ (simulator) on HBM-PIM.
 \end{abstract}
 
 \section{Introduction}
@@ -57,7 +57,7 @@ WSL2 laptop with Gurobi~13, including a workaround for a presolve failure;
 (2) optimal mappings for five operators on both targets and a comparison with
 the authors' heuristic mappings, with a reproducible scoring and plotting
 pipeline; (3) a three-way comparison of ILP objective, analytical model and
-simulator that exposes where they disagree; (4) an automated zero-padding framework that mitigates OptiPIM's perfect-factorization bottleneck, achieving up to 1.71$\times$ speedup on SIMDRAM and 10.97$\times$ on HBM-PIM.
+simulator that exposes where they disagree; (4) an automated zero-padding framework that mitigates OptiPIM's perfect-factorization bottleneck, achieving, on ViT attention, 1.71$\times$ (model) / 1.40$\times$ (simulator) on SIMDRAM and 10.97$\times$ (model) / 10.92$\times$ (simulator) on HBM-PIM.
 
 \section{Background: the OptiPIM Formulation}
 \textbf{Targets.} HBM-PIM places a SIMD unit next to each pair of banks; its
@@ -420,7 +420,7 @@ different for the two mappers, so the model also misjudges the size of the
 SIMDRAM speedups.
 \item Smaller C1 gain (34$\times$ vs about 100$\times$); the paper's Fig.~12
 costs are in different units, and its mapping uses 16 banks.
-\item Gurobi 13.0.3 instead of 11.0.3, with presolve disabled; with several
+\item Gurobi 13.0.3 instead of 11.0.3, with presolve disabled for HBM-PIM (see Sec.~\ref{sec:limits}); with several
 optimal solutions a different version may return a different mapping.
 \item Five single operators instead of whole networks, so we cannot reproduce
 the paper's per-network averages.
@@ -443,7 +443,7 @@ The framework pads awkward loop bounds to nearby 7-smooth numbers (integers whos
 Zero-padding is strictly semantics-preserving: padded output elements are computed on zeroed inputs and discarded upon host gathering, while padded reduction dimensions accumulate zeros.
 We constrain candidates to $\le$25\% growth per dimension and $\le$30\% overall multiply-accumulate (MAC) overhead.
 For each candidate, the script synthesizes a minimal MLIR kernel, invokes \texttt{pim-opt} to find the optimal mapping, and re-scores the resulting trace using the authors' validated Python analytical cost model.
-Because the unpadded operator is always evaluated as a candidate, the search is guaranteed never to perform worse than baseline OptiPIM.
+Because the unpadded operator is always evaluated as a candidate, the mapping the search selects is never worse than baseline OptiPIM under the analytical model.
 
 \begin{table}[t]
 \centering
@@ -484,18 +484,34 @@ ResNet-50 conv5 & SIMDRAM & $2.43 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$
 \label{fig:padding_tradeoff}
 \end{figure}
 
+\begin{table}[t]
+\caption{Padding speedup: analytical model versus Ramulator2 (cycles, unpadded / padded)}
+\label{tab:padding_sim}
+\centering\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{llrrr}
+\toprule
+Operator, target & Variant & Sim.\ cycles & Model & Sim. \\
+\midrule
+ViT attn QK, HBM-PIM & pad\_P200 & $2.99\!\times\!10^6 / 2.73\!\times\!10^5$ & 10.97$\times$ & 10.92$\times$ \\
+ViT QKV, HBM-PIM & pad\_P200 & $5.86\!\times\!10^6 / 3.19\!\times\!10^6$ & 1.84$\times$ & 1.83$\times$ \\
+ViT attn QK, SIMDRAM & pad\_R200 & $1.29\!\times\!10^7 / 9.23\!\times\!10^6$ & 1.71$\times$ & 1.40$\times$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
 \textbf{Results and Discussion.}
 Table~\ref{tab:padding_results} and Figure~\ref{fig:padding_speedup} present the results across all evaluated layers.
 Our findings confirm three key insights:
 
 1) \emph{Prime Sequence Lengths (Transformers):} For ViT Attention QK ($12 \times 197 \times 64 \times 197$), padding $R$ from 197 to 200 (only 1.52\% extra MACs) yields a \textbf{1.71$\times$ speedup} on SIMDRAM.
 On HBM-PIM, padding $P$ to 200 yields an even more dramatic \textbf{10.97$\times$ speedup} (reducing cycles from $2.87 \times 10^6$ to $2.62 \times 10^5$).
-With $P=197$, the ILP could not distribute spatial tokens across the 32 banks; padding to 200 allows rich factorizations ($200 = 8 \times 25$), fully engaging the bank-level SIMD units.
-Similarly, ViT QKV projection achieves a \textbf{1.84$\times$} speedup on HBM-PIM and \textbf{1.28$\times$} on SIMDRAM.
+A likely reason is that $P=197$ is prime, so the ILP cannot split it across banks and columns, whereas $200 = 8 \times 25$ admits rich factorizations (we did not inspect the mappings in detail). Replaying both mappings in Ramulator2 gives $2.99 \times 10^6$ and $2.73 \times 10^5$ cycles, i.e.\ 10.92$\times$, so the model is right that the unpadded mapping is slow. The ILP objective hides this: pim-opt's own cost for the unpadded mapping is only $9.5 \times 10^4$ against an analytical cost of $2.87 \times 10^6$, the same objective-versus-model effect that made OptiPIM lose on M1. Part of the gain is therefore OptiPIM's weak HBM-PIM objective rather than padding alone.
+Similarly, ViT QKV projection achieves a \textbf{1.84$\times$} speedup on HBM-PIM and \textbf{1.28$\times$} on SIMDRAM in the model. We replayed three of these pairs in Ramulator2 (Table~\ref{tab:padding_sim}): the HBM-PIM gains are confirmed to within 0.5\% (10.92$\times$ and 1.83$\times$), while the SIMDRAM gain for ViT attention is 1.40$\times$ in the simulator against 1.71$\times$ in the model. This is consistent with the SIMDRAM model-versus-simulator gap reported above, so for SIMDRAM we regard the simulator figure as the more reliable one. The other rows of Table~\ref{tab:padding_results} are model-only.
 
 2) \emph{Large Vocabularies (Language Models):} For GPT-2's vocabulary projection ($R = 50{,}257$), padding $R$ to the 7-smooth dimension $50{,}400$ adds just 0.28\% overhead while delivering a \textbf{1.15$\times$ speedup} on SIMDRAM, where large column counts require smooth divisibility.
 
-3) \emph{Feasibility Recovery and Controls:} For AlexNet conv0 on SIMDRAM, unpadded OptiPIM terminated with an infeasible status because no valid divisor combination matched the physical row and column constraints; padding to smooth bounds recovered feasibility.
+3) \emph{Feasibility Recovery and Controls:} For AlexNet conv0 on SIMDRAM, pim-opt (with Gurobi's default presolve) reported no feasible mapping for the unpadded $55 \times 55$ shape, whereas eight padded variants solved. We did not investigate the cause further.
 Conversely, on control CNN layers with power-of-two channel counts (AlexNet conv1, conv2, fc0, and ResNet-50 conv5), padding provided no benefit on SIMDRAM (1.00$\times$), proving that the framework safely retains the exact unpadded solution whenever factorization is already smooth.
 Figure~\ref{fig:padding_tradeoff} illustrates the trade-off: moderate padding ($\le 5\%$) consistently improves throughput, while excessive padding ($>15\%$) introduces computation overhead that offsets tiling benefits.
 
@@ -509,8 +525,9 @@ and target), against the paper's 12{,}000 random mappings, and one run each, so
 we cannot report an $R^2$ comparable to the paper's.
 \item \textbf{Unexplained gaps.} The SIMDRAM model-vs-simulator gap and the
 ILP-objective-vs-model gap on HBM-PIM are measured but not explained.
+\item \textbf{Padding evaluation.} Only three padded mappings were simulated, the other padding results are model-only, and padded shapes were not compared with the heuristic baseline.
 \item \textbf{Different solver version and machine.} Gurobi 13.0.3 with
-presolve disabled, on a laptop rather than the paper's setup; absolute solve
+presolve disabled for HBM-PIM (the logs show it disabled for four of five SIMDRAM operators and at its default for SIMDRAM M1; the padding runs used the default on SIMDRAM), on a laptop rather than the paper's setup; absolute solve
 times are not comparable.
 \item \textbf{Five operators, one configuration.} 32 banks and 16-bit values
 only.
@@ -546,7 +563,7 @@ weak points that the paper's averages hide: a matrix multiplication where the
 ILP picks a mapping slower than the heuristic because its objective diverges
 from the validated cost model, a SIMDRAM model-vs-simulator gap, and a
 stride/dilation ordering mismatch between \texttt{pim-opt} and its scorer.
-Our zero-padding extension further proves that relaxing OptiPIM's exact divisor constraint yields significant throughput gains (up to 1.71$\times$ on SIMDRAM and 10.97$\times$ on HBM-PIM) on transformer workloads with prime token counts or large vocabularies.
+Our zero-padding extension further shows that relaxing OptiPIM's exact divisor constraint can give large gains on workloads with prime token counts: for ViT attention, 1.40$\times$ on SIMDRAM and 10.92$\times$ on HBM-PIM in the simulator (1.71$\times$ and 10.97$\times$ in the model). Gains on other operators are smaller and were checked with the model only.
 
 \section*{Member Contributions}
 \textbf{Pari Khandelwal} (Member 1) built the toolchain (LLVM, \texttt{pim-opt},

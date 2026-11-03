@@ -1,0 +1,7 @@
+layer,device,variant,simulated_cycles,sim_seconds
+vit.attn_qk,hbmpim,unpadded,2985328,75
+vit.attn_qk,hbmpim,pad_P200,273310,5
+vit.qkv,hbmpim,unpadded,5857930,105
+vit.qkv,hbmpim,pad_P200,3192790,61
+vit.attn_qk,simdram,unpadded,12886072,28
+vit.attn_qk,simdram,pad_R200,9229228,21
