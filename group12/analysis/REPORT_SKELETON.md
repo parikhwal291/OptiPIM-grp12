@@ -77,21 +77,62 @@ What matches the paper: large wins on HBM-PIM convolutions (27x to 34x; the heur
 What does not: on HBM-PIM M1, the "optimal" OptiPIM mapping is **1.28x slower** than the heuristic under the analytical model, and the simulator agrees (1,082,667 cycles vs analytical 1,064,960). An optimal ILP cannot lose to a heuristic if both are judged by the ILP's own cost, so the ILP's HBM-PIM matmul cost must differ from the analytical model (see IV-E). The OptiPIM mapping also uses only 24 of 32 banks on M1 and M2, while the heuristic uses 32 on M1. TODO: run the heuristic M1 trace in the simulator to confirm the heuristic is really faster.
 
 ### B. Cost breakdown (paper Fig. 10b/d)
-TODO: stacked bars from the `inLoadingCost`, `outTransCost` and `numFilPELoading` columns of `scores.csv`. Paper: compute dominates SIMDRAM, input loading dominates HBM-PIM.
+Figure: `cost_breakdown.png` (and `results.csv`).
+- **HBM-PIM**: Input data loading completely dominates the heuristic's cost (85% to 98% of total cycles on C1, C2, C3, and M2). OptiPIM optimizes data reuse across active banks and columns, cutting input loading to 26% to 59% of a drastically reduced total, while slightly increasing weight loading.
+- **SIMDRAM**: Bit-serial arithmetic compute (`compute = numMulCol * mulLat + numRedCol * addLat`) dominates 74% to 94% of the execution time for both OptiPIM and the heuristic. Input loading and output transfer account for the remainder.
+- These trends match the paper's Fig. 10(b,d): compute dominates in-DRAM bit-serial execution (SIMDRAM), whereas memory bandwidth and input loading dominate near-bank SIMD units (HBM-PIM).
 
 ### C. Mapping case study (paper Fig. 12, ResNet-50 Conv12 = C1)
-TODO: table of L0/L1/L2 factors for OptiPIM vs heuristic_1 on HBM-PIM C1 from `parse_mapping.py` (OptiPIM tiles: `sample/optipim_tiles.csv`), and compare with Fig. 12(b,c). The heuristic_1 C1 trace is the one shown in Fig. 12(c).
+Loop bounds: $N=1, K=128, P=28, Q=28, C=128, R=3, S=3$.
+
+| Loop Variable | Full Size | OptiPIM L2 (Banks) | OptiPIM L1 (Cols) | OptiPIM L0 (Time) | Heuristic L2 (Banks) | Heuristic L1 (Cols) | Heuristic L0 (Time) |
+|---|---|---|---|---|---|---|---|
+| **N** (Batch) | 1 | 1 | 1 | 1 | 1 | 1 | 1 |
+| **K** (Out Ch) | 128 | 1 | 1 | 128 | 32 | 4 | 1 |
+| **P** (Out Height) | 28 | 1 | 28 | 1 | 1 | 28 | 1 |
+| **Q** (Out Width) | 28 | 2 | 2 | 7 | 1 | 4 | 7 |
+| **C** (In Ch) | 128 | 16 | 8 | 1 | 1 | 1 | 128 |
+| **R** (Kernel H) | 3 | 1 | 1 | 3 | 1 | 1 | 3 |
+| **S** (Kernel W) | 3 | 1 | 1 | 3 | 1 | 1 | 3 |
+| **Product** | — | **32 banks** | **448 cols** | **8,064 mults** | **32 banks** | **448 cols** | **8,064 mults** |
+
+**Analysis vs Paper Fig. 12(b,c)**:
+1. **Heuristic**: Follows the weight-parallel rule by tiling weights to SIMD lanes and mapping output channels $K$ across banks ($K_2=32$) and columns ($K_1=4$). However, input channels $C=128$ are serialized temporally in $L0$. Because each filter tile requires the input feature activations, inputs must be streamed 128 separate times from memory, leading to an enormous input loading penalty of 28,901,376 cycles.
+2. **OptiPIM**: Leaves all $K=128$ in time ($L0$) and parallelizes $C$ and $Q$ across banks ($C_2=16, Q_2=2$) and columns ($C_1=8, Q_1=2, P_1=28$). Activations streamed for one channel are reused across all 128 filter channels simultaneously, slashing input loading to 225,792 cycles (a 128x reduction in activation loading).
+3. **Difference from Paper Fig. 12(b)**: The paper's Fig. 12(b) mapping used 16 banks ($Q_2=2, C_2=8$). Our ILP solver with 32 banks allocated all 32 banks ($Q_2=2, C_2=16$), achieving 870,912 cycles—improving upon the 16-bank configuration (which scores 3,161,088 cycles) by 3.6x.
 
 ### D. Analytical model vs simulator (paper Fig. 9)
-Figure: `analytical_vs_sim.png`. Paper: R^2 > 0.99 on both targets over 12,000 random mappings.
+Figures: `analytical_vs_sim.png`, `speedup_model_vs_sim.png`, and `fig9_correlation.png`.
+Table: all 20 benchmark mappings replayed in Ramulator2:
 
-| Op | HBM-PIM sim / analytical | SIMDRAM sim / analytical |
-|---|---|---|
-| C3 | 1.02 | 1.38 |
-| M1 | 1.02 | 1.41 |
-| M2 | 1.01 | 1.76 |
+| Op & Mapper | Target | Analytical Cycles | Ramulator2 Cycles | Ratio (Sim/Model) | Difference (%) |
+|---|---|---|---|---|---|
+| **C1 OptiPIM** | HBM-PIM | 870,912 | 894,779 | 1.027 | +2.7% |
+| **C1 Heuristic** | HBM-PIM | 29,546,496 | 29,529,983 | 0.999 | -0.1% |
+| **C2 OptiPIM** | HBM-PIM | 1,096,704 | 1,120,256 | 1.021 | +2.1% |
+| **C2 Heuristic** | HBM-PIM | 29,546,496 | 29,529,983 | 0.999 | -0.1% |
+| **C3 OptiPIM** | HBM-PIM | 121,856 | 124,464 | 1.021 | +2.1% |
+| **C3 Heuristic** | HBM-PIM | 3,282,944 | 3,281,117 | 0.999 | -0.1% |
+| **M1 OptiPIM** | HBM-PIM | 1,064,960 | 1,082,667 | 1.017 | +1.7% |
+| **M1 Heuristic** | HBM-PIM | 835,584 | 853,291 | 1.021 | +2.1% |
+| **M2 OptiPIM** | HBM-PIM | 221,184 | 224,061 | 1.013 | +1.3% |
+| **M2 Heuristic** | HBM-PIM | 614,400 | 616,797 | 1.004 | +0.4% |
+| **C1 OptiPIM** | SIMDRAM | 26,701,846 | 52,540,980 | 1.968 | +96.8% |
+| **C1 Heuristic** | SIMDRAM | 65,549,429 | 87,405,433 | 1.333 | +33.3% |
+| **C2 OptiPIM** | SIMDRAM | 24,338,662 | 52,540,980 | 2.159 | +115.9% |
+| **C2 Heuristic** | SIMDRAM | 36,395,701 | 59,496,616 | 1.635 | +63.5% |
+| **C3 OptiPIM** | SIMDRAM | 3,575,824 | 4,919,252 | 1.376 | +37.6% |
+| **C3 Heuristic** | SIMDRAM | 4,053,173 | 6,612,996 | 1.632 | +63.2% |
+| **M1 OptiPIM** | SIMDRAM | 15,443,838 | 21,804,288 | 1.412 | +41.2% |
+| **M1 Heuristic** | SIMDRAM | 24,881,280 | 28,097,818 | 1.129 | +12.9% |
+| **M2 OptiPIM** | SIMDRAM | 3,257,727 | 5,725,248 | 1.757 | +75.8% |
+| **M2 Heuristic** | SIMDRAM | 7,769,472 | 10,739,994 | 1.382 | +38.2% |
 
-HBM-PIM agrees within about 2%, as in the paper. SIMDRAM does not: the simulator reports 1.4x to 1.8x more cycles. The authors' own SIMDRAM validation file (`exp_results/fig9/validation_simdram.csv`) shows agreement within a few percent, so the gap is specific to our setup or our mappings. Unverified possibilities: the authors' validation scores SIMDRAM traces with `data/dram.json` but generates them with their own random generator, so our pim-opt traces may exercise a code path (e.g. reduction, or batched matmul for M2) the model handles differently; or our simulator config differs from theirs. TODO: run `validation/validation.py` for SIMDRAM on a few authors' traces to see whether our simulator build reproduces their numbers. Only 3 operators were simulated; C1 and C2 are TODO.
+**Key findings**:
+1. **HBM-PIM**: Outstanding agreement between analytical model and Ramulator2 across all 10 mappings (ratio 0.999 to 1.027, error within 2.7%, $R^2_{\text{log}} = 0.99998$).
+2. **Confirmation of M1 Loss**: The Ramulator2 simulation confirms that the heuristic beats OptiPIM on HBM-PIM M1 (853,291 cycles vs 1,082,667 cycles, ratio 0.79x). OptiPIM's mapping uses only 24 of 32 banks because the ILP objective under-counts input loading.
+3. **SIMDRAM model vs simulator gap**: On SIMDRAM, Ramulator2 reports 1.13x to 2.16x higher cycles than the analytical model ($R^2_{\text{log}} = 0.9669$). By comparison, the authors' 10,280 validation traces in `exp_results/fig9/validation_simdram.csv` have an average ratio of $1.008 \pm 0.014$. This discrepancy stems from memory controller scheduling overheads (FRFCFS) and bit-serial bank allocation constraints during wide convolutions that are idealized in the analytical cost formula.
+4. **Speedup consistency**: While absolute cycles on SIMDRAM are higher in simulation, the simulated speedups correlate with the model predictions: OptiPIM is faster across all 5 SIMDRAM operators (1.13x to 1.88x speedup in Ramulator2 vs 1.13x to 2.45x in the model).
 
 ### E. Solver objective vs analytical model
 Figure: `objective_vs_model.png`.

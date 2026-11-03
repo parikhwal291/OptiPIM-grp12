@@ -264,8 +264,8 @@ on SIMDRAM it is bit-serial multiply and add.}
 \subsection{Mapping case study: ResNet-50 Conv12 (C1)}
 On HBM-PIM our ILP maps C1 with $Q{=}2$ and $C{=}16$ across the 32 banks,
 $P{=}28$, $Q{=}2$, $C{=}8$ across columns, and $K{=}128$, $Q{=}7$, $R{=}S{=}3$
-in time. The heuristic instead puts $K$ across banks and reloads the input for
-every filter, so its input loading is 28{,}901{,}376 against OptiPIM's
+in time (Table~\ref{tab:c1_mapping}). The heuristic instead puts $K$ across banks ($K_2{=}32, K_1{=}4$) and reloads the input for
+every filter ($C_0{=}128$), so its input loading is 28{,}901{,}376 against OptiPIM's
 225{,}792, which accounts for almost all of the 34$\times$ gap. The paper's
 Fig.~12 reports about 100$\times$ for this layer with a different OptiPIM
 mapping that uses 16 banks. We rebuilt the paper's Fig.~12(b) mapping as a trace
@@ -275,6 +275,31 @@ heuristic and 3.6$\times$ worse than our 32-bank mapping. Its output-reduction
 term (6{,}272) equals the value printed in the paper, but its input loading
 (903{,}168) does not (18{,}432), so the costs in the paper's Fig.~12 appear to be
 in different units from the Python model; we therefore compare ratios only.
+
+\begin{table}[t]
+\centering
+\caption{C1 (ResNet-50 Conv12) Loop Split Factors: OptiPIM vs.\ Heuristic}
+\label{tab:c1_mapping}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+ & & \multicolumn{3}{c}{OptiPIM (32 banks)} & \multicolumn{3}{c}{Heuristic (32 banks)} \\
+\cmidrule(lr){3-5}\cmidrule(lr){6-8}
+Loop & Dim & $L2$ (Bank) & $L1$ (Col) & $L0$ (Time) & $L2$ (Bank) & $L1$ (Col) & $L0$ (Time) \\
+\midrule
+$N$ (Batch) & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+$K$ (Out Ch) & 128 & 1 & 1 & 128 & 32 & 4 & 1 \\
+$P$ (Out H) & 28 & 1 & 28 & 1 & 1 & 28 & 1 \\
+$Q$ (Out W) & 28 & 2 & 2 & 7 & 1 & 4 & 7 \\
+$C$ (In Ch) & 128 & 16 & 8 & 1 & 1 & 1 & 128 \\
+$R$ (Kernel H) & 3 & 1 & 1 & 3 & 1 & 1 & 3 \\
+$S$ (Kernel W) & 3 & 1 & 1 & 3 & 1 & 1 & 3 \\
+\midrule
+Total & & \textbf{32 banks} & \textbf{448 cols} & \textbf{8{,}064} & \textbf{32 banks} & \textbf{448 cols} & \textbf{8{,}064} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Analytical model versus simulator}
 \label{sec:simcheck}
