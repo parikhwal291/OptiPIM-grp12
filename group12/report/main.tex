@@ -97,7 +97,7 @@ trace as PIM commands and reports \texttt{memory\_system\_cycles}.
 We built the flow on Ubuntu 22.04 under WSL2 on a Windows laptop (6 logical
 cores and 11\,GB of RAM given to WSL, g++ 11.4.0). Building LLVM,
 \texttt{pim-opt} and the simulator took about 4\,h\,15\,min. We used Gurobi
-13.0.3 with a free academic licence; the paper used 11.0.3. The repository's
+13.0.3~\cite{gurobi} with a free academic licence; the paper used 11.0.3. The repository's
 CMake module only searches for Gurobi 11.0 and 12.0, so we exposed the 13.0
 library under the 12.0 name; no source code was changed. With Gurobi~13,
 presolve wrongly reported the $3{\times}3$ convolutions C1 and C2 infeasible on
@@ -493,6 +493,7 @@ ResNet-50 conv5 & SIMDRAM & $2.43 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$
 \label{tab:padding_sim}
 \centering\footnotesize
 \setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llrrr}
 \toprule
 Operator, target & Variant & Sim.\ cycles & Model & Sim. \\
@@ -501,7 +502,7 @@ ViT attn QK, HBM-PIM & pad\_P200 & $2.99\!\times\!10^6 / 2.73\!\times\!10^5$ & 1
 ViT QKV, HBM-PIM & pad\_P200 & $5.86\!\times\!10^6 / 3.19\!\times\!10^6$ & 1.84$\times$ & 1.83$\times$ \\
 ViT attn QK, SIMDRAM & pad\_R200 & $1.29\!\times\!10^7 / 9.23\!\times\!10^6$ & 1.71$\times$ & 1.40$\times$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \textbf{Results and Discussion.}
@@ -550,7 +551,7 @@ mappings rather than the original HBM-PIM software.
 Paper & Our setup \\
 \midrule
 Real-hardware measurements & Analytical model and Ramulator2 simulator \\
-PIM-DL genetic-search baseline & Weight-parallel heuristic only \\
+PIM-DL~\cite{pimdl} genetic-search baseline & Weight-parallel heuristic only \\
 Full networks (AlexNet, ResNet, VGG, UNet, BERT, Llama) & Five single operators from ResNet-50 and BERT \\
 Memory scalability study & 32 banks only \\
 PyTorch $\to$ Torch-MLIR front end & The authors' shipped \texttt{.linalg.mlir} layer files \\
