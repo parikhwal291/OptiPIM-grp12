@@ -17,6 +17,18 @@ OptiPIM is a mapper for mapping tensor programs onto digital PIM architectures. 
 
 > [!NOTE]
 > We are slowly changing the name from pim-opt to optipim in the source code.
+
+---
+
+## Group 12 course reproduction
+
+This repository is a fork used for the Group 12 course project, a reduced-scale reproduction of the OptiPIM paper (ISCA 2025). All of our work lives under `group12/`; the authors' files are not edited.
+
+- Build and run instructions (WSL2/Linux, Gurobi, Docker): [`group12/docs/SETUP.md`](group12/docs/SETUP.md)
+- Team agreements (folder layout, trace format, results CSV): [`group12/README.md`](group12/README.md)
+- Mappings and scores: `group12/mappings/`, `group12/results/`
+- Report: `group12/report/main.tex`
+- Padding extension: `group12/docs/padding/`
 ---
 
 ## 1. Prerequisites
