@@ -24,7 +24,7 @@ linear program (ILP) and reports large speedups over hand-written heuristics.
 We reproduce its core result at reduced scale with the authors' public flow and
 Gurobi: five single operators (three ResNet-50 convolutions, two BERT matrix
 multiplications) on HBM-PIM and SIMDRAM, scored with the authors' analytical
-model and, for three operators, their Ramulator2 simulator. OptiPIM beats the
+model and replayed in their Ramulator2 simulator. OptiPIM beats the
 weight-parallel heuristic by 27--34$\times$ on HBM-PIM convolutions and by
 1.1--2.5$\times$ on SIMDRAM, matching the paper's trend. It loses on one
 HBM-PIM matrix multiplication (0.78$\times$), which we trace to the mapping using
@@ -285,6 +285,7 @@ in different units from the Python model; we therefore compare ratios only.
 \label{tab:c1_mapping}
 \footnotesize
 \setlength{\tabcolsep}{3pt}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{lrrrrrrr}
 \toprule
  & & \multicolumn{3}{c}{OptiPIM (32 banks)} & \multicolumn{3}{c}{Heuristic (32 banks)} \\
@@ -301,7 +302,7 @@ $S$ (Kernel W) & 3 & 1 & 1 & 3 & 1 & 1 & 3 \\
 \midrule
 Total & & \textbf{32 banks} & \textbf{448 cols} & \textbf{8{,}064} & \textbf{32 banks} & \textbf{448 cols} & \textbf{8{,}064} \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 
 \subsection{Analytical model versus simulator}
@@ -445,30 +446,33 @@ We constrain candidates to $\le$25\% growth per dimension and $\le$30\% overall 
 For each candidate, the script synthesizes a minimal MLIR kernel, invokes \texttt{pim-opt} to find the optimal mapping, and re-scores the resulting trace using the authors' validated Python analytical cost model.
 Because the unpadded operator is always evaluated as a candidate, the mapping the search selects is never worse than baseline OptiPIM under the analytical model.
 
-\begin{table}[t]
-\centering
-\caption{Analytical evaluation of zero-padding across 8 benchmark operators on 32-bank HBM-PIM and SIMDRAM.}
+\begin{table*}[t]
+\caption{Analytical evaluation of zero-padding on 8 operators and both targets (32 banks). Costs are analytical-model cycles; only the three pairs in Table~\ref{tab:padding_sim} were also simulated.}
 \label{tab:padding_results}
-\footnotesize
-\begin{tabular}{llrrrr}
+\centering\footnotesize
+\begin{tabular}{llrlrr}
 \toprule
-Operator & Target & Unpadded (cyc) & Best Variant & Overhead & Speedup \\
+Operator & Target & Unpadded (cyc) & Best variant & Overhead & Speedup \\
 \midrule
 ViT Attention QK & SIMDRAM & $1.14 \times 10^7$ & pad\_R200 & +1.5\% & \textbf{1.71$\times$} \\
 ViT Attention QK & HBM-PIM & $2.87 \times 10^6$ & pad\_P200 & +1.5\% & \textbf{10.97$\times$} \\
-ViT QKV Proj.   & SIMDRAM & $9.44 \times 10^7$ & pad\_P200 & +1.5\% & \textbf{1.28$\times$} \\
-ViT QKV Proj.   & HBM-PIM & $5.75 \times 10^6$ & pad\_P200 & +1.5\% & \textbf{1.84$\times$} \\
-GPT-2 LM Head   & SIMDRAM & $9.23 \times 10^6$ & pad\_R50400 & +0.3\% & \textbf{1.15$\times$} \\
-GPT-2 LM Head   & HBM-PIM & $2.40 \times 10^5$ & pad\_R51450 & +2.4\% & \textbf{1.08$\times$} \\
-AlexNet conv0   & HBM-PIM & $2.75 \times 10^6$ & pad\_K70\_P56\_Q56 & +13.4\% & \textbf{3.79$\times$} \\
-AlexNet conv0   & SIMDRAM & Infeasible & pad\_K70\_P56\_Q56 & +13.4\% & Feasible \\
-AlexNet conv1   & SIMDRAM & $4.64 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$ \\
-AlexNet conv2   & SIMDRAM & $2.25 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$ \\
-AlexNet fc0     & SIMDRAM & $7.93 \times 10^6$ & unpadded & 0.0\% & 1.00$\times$ \\
+ViT QKV Proj. & SIMDRAM & $9.44 \times 10^7$ & pad\_P200 & +1.5\% & \textbf{1.28$\times$} \\
+ViT QKV Proj. & HBM-PIM & $5.75 \times 10^6$ & pad\_P200 & +1.5\% & \textbf{1.84$\times$} \\
+GPT-2 LM Head & SIMDRAM & $9.23 \times 10^6$ & pad\_R50400 & +0.3\% & \textbf{1.15$\times$} \\
+GPT-2 LM Head & HBM-PIM & $2.40 \times 10^5$ & pad\_R51450 & +2.4\% & \textbf{1.08$\times$} \\
+AlexNet conv0 & HBM-PIM & $2.75 \times 10^6$ & pad\_K70\_P56\_Q56 & +13.4\% & \textbf{3.79$\times$} \\
+AlexNet conv0 & SIMDRAM & Infeasible & pad\_K70\_P56\_Q56 & +13.4\% & Feasible \\
+AlexNet conv1 & HBM-PIM & $1.54 \times 10^6$ & unpadded & 0.0\% & 1.00$\times$ \\
+AlexNet conv1 & SIMDRAM & $4.64 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$ \\
+AlexNet conv2 & HBM-PIM & $8.23 \times 10^5$ & pad\_K392 & +2.1\% & 1.19$\times$ \\
+AlexNet conv2 & SIMDRAM & $2.25 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$ \\
+AlexNet fc0 & HBM-PIM & $2.40 \times 10^5$ & pad\_R4116 & +0.5\% & 1.01$\times$ \\
+AlexNet fc0 & SIMDRAM & $7.93 \times 10^6$ & unpadded & 0.0\% & 1.00$\times$ \\
+ResNet-50 conv5 & HBM-PIM & $8.71 \times 10^5$ & pad\_K525 & +2.5\% & 1.08$\times$ \\
 ResNet-50 conv5 & SIMDRAM & $2.43 \times 10^7$ & unpadded & 0.0\% & 1.00$\times$ \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 \begin{figure}[t]
 \centering
@@ -512,8 +516,8 @@ Similarly, ViT QKV projection achieves a \textbf{1.84$\times$} speedup on HBM-PI
 2) \emph{Large Vocabularies (Language Models):} For GPT-2's vocabulary projection ($R = 50{,}257$), padding $R$ to the 7-smooth dimension $50{,}400$ adds just 0.28\% overhead while delivering a \textbf{1.15$\times$ speedup} on SIMDRAM, where large column counts require smooth divisibility.
 
 3) \emph{Feasibility Recovery and Controls:} For AlexNet conv0 on SIMDRAM, pim-opt (with Gurobi's default presolve) reported no feasible mapping for the unpadded $55 \times 55$ shape, whereas eight padded variants solved. We did not investigate the cause further.
-Conversely, on control CNN layers with power-of-two channel counts (AlexNet conv1, conv2, fc0, and ResNet-50 conv5), padding provided no benefit on SIMDRAM (1.00$\times$), proving that the framework safely retains the exact unpadded solution whenever factorization is already smooth.
-Figure~\ref{fig:padding_tradeoff} illustrates the trade-off: moderate padding ($\le 5\%$) consistently improves throughput, while excessive padding ($>15\%$) introduces computation overhead that offsets tiling benefits.
+Conversely, on control CNN layers with power-of-two channel counts (AlexNet conv1, conv2, fc0, and ResNet-50 conv5), padding provided no benefit on SIMDRAM (1.00$\times$) and only 1.01--1.19$\times$ on HBM-PIM (model only), showing that the framework safely retains the exact unpadded solution whenever factorization is already smooth.
+Figure~\ref{fig:padding_tradeoff} shows that overhead alone does not predict the outcome. Of the 112 scored candidates, the median speedup is 1.00$\times$ both for variants with at most 5\% extra MACs (21 of 66 are more than 5\% slower than unpadded) and for 5--15\% (median 0.93$\times$). The large gains come from a few variants that make a bound factorizable, and the four variants above 15\% overhead all gained (up to 3.6$\times$). A search over several candidates is therefore needed, rather than always padding to the nearest smooth size.
 
 \section{Limitations of Our Setup}
 \label{sec:limits}
