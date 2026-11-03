@@ -11,8 +11,8 @@
 
 \title{OptiPIM at Reduced Scale: Reproducing ILP-Optimal\\Processing-in-Memory Mappings}
 
-\author{\IEEEauthorblockN{Group 12: Pari Khandelwal, \fillin{Member 2}, \fillin{Member 3}, Keshav Kaushik}
-\IEEEauthorblockA{\fillin{Course name, Department, University}}}
+\author{\IEEEauthorblockN{Group 12: Pari Khandelwal, Ashutosh Kumar, Parth Sandeep Maliye, Keshav Kaushik}
+\IEEEauthorblockA{Memory Centric Computer Architecture\\Department of Computer Science and Engineering, IIT Guwahati}}
 
 \maketitle
 
@@ -140,7 +140,7 @@ All runs use the paper's full method: flexible indexing
 stores each mapping and Gurobi log, and records solve times
 (Table~\ref{tab:solve}). Every run ended with ``Optimal solution found''. Solve
 times of 1.1--181\,s are in line with the paper's 1--209\,s on a consumer-grade
-16-core CPU. \fillin{A rerun from a fresh clone gave identical mappings / identical objective values.}
+16-core CPU.
 
 \begin{table}[t]
 \centering
@@ -168,7 +168,10 @@ authors ship in \texttt{baseline\_mappings/heuristic\_1} (and
 \texttt{heuristic\_2} as a cross-check) for exactly our five layers at 32 banks
 (ResNet50-12, -2, -1 and BERT-0, -1; problem sizes checked against our
 operators). The \texttt{heuristic\_1} mapping for C1 is identical to the
-paper's Fig.~12(c). \fillin{If Member 2's reimplementation exists: it reproduces these traces / differs in ...}
+paper's Fig.~12(c). Because the authors ship only trace files, not code, Member~2 re-implemented the
+heuristic (\texttt{heuristic.py}, covering convolution, matrix multiplication and batched matrix multiplication)
+and wrote \texttt{check\_heuristic.py}, which compares the generated traces with the shipped ones. All ten traces
+(five operators on two targets) match the shipped \texttt{heuristic\_1} files exactly and reproduce their analytical costs.
 
 \subsection{Scoring}
 Every mapping, OptiPIM's and the heuristic's, is scored with the same
@@ -551,8 +554,8 @@ Ramulator2) and the Gurobi setup on WSL2, diagnosed the Gurobi~13 presolve
 failure, solved all operators on both targets, wrote the scoring, simulator and
 plotting scripts, found the stride/dilation mismatch, wrote the Dockerfile and
 build instructions, and wrote the setup, results and limitations sections.
-\textbf{\fillin{Member 2}}: \fillin{heuristic baseline}.
-\textbf{\fillin{Member 3}}: \fillin{evaluation and simulator correlation}.
+\textbf{Ashutosh Kumar} (Member 2) re-implemented the weight-parallel baseline heuristic (\texttt{heuristic.py}) and its checker (\texttt{check\_heuristic.py}), which reproduces all ten shipped \texttt{heuristic\_1} traces and their analytical costs exactly, and wrote the baseline-method notes.
+\textbf{Parth Sandeep Maliye} (Member 3) built the evaluation pipeline (\texttt{evaluate.py}, \texttt{results.csv}) that merges analytical costs and simulator cycles, and produced the speedup, cost-breakdown and model-versus-simulator correlation figures.
 \textbf{Keshav Kaushik} (Member 4) designed, implemented, and evaluated the dimension padding extension, created the candidate generator and analytical rescoring pipeline, and evaluated awkward transformer and CNN operators across both architectures.
 
 \section*{Code}
