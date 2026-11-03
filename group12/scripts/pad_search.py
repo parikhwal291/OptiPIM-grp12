@@ -239,7 +239,7 @@ def run_pimopt(args, device, mlir_path, run_dir):
            "--number-counting-method", "0", "--obj-method", "0", "--storage-method", "0",
            "--config-arch-path", arch,
            "--config-knobs-path", args.knobs,
-           mlir_path, "."]
+           mlir_path]
     # Gurobi 13 workaround: its presolve wrongly reports some HBM-PIM conv
     # models infeasible (3x3 conv at 32 banks), but turning presolve off made a
     # SIMDRAM matmul stop without solving. So by default "Presolve 0" is written

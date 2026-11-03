@@ -4,7 +4,7 @@
 #   bash group12/scripts/run_padding_eval.sh            # everything
 #   bash group12/scripts/run_padding_eval.sh quick      # AlexNet + ViT attention only
 set -u
-PAD="python3 group12/scripts/pad_search.py"
+PAD="python3 group12/scripts/pad_search.py --banks 32"
 L=nn_models/alexnet/single_layers/16banks
 OUT=results/padding
 mkdir -p "$OUT"

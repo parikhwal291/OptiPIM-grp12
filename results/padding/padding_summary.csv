@@ -1,0 +1,16 @@
+layer,device,unpadded_cost,best_variant,best_cost,mac_overhead,speedup
+alexnet.l0.conv0,hbmpim,1.685530e+06,pad_P56_Q56,6.645680e+05,0.0367,2.5363
+alexnet.l1.conv1,hbmpim,2.104344e+06,pad_K200,1.628865e+06,0.0417,1.2919
+alexnet.l1.conv1,simdram,9.013648e+07,pad_K196,6.705083e+07,0.0208,1.3443
+alexnet.l2.conv2,hbmpim,1.202896e+06,pad_K392,6.340030e+05,0.0208,1.8973
+alexnet.l2.conv2,simdram,3.270838e+07,unpadded,3.270838e+07,0.0000,1.0000
+alexnet.l5.fc0,hbmpim,1.256960e+05,unpadded,1.256960e+05,0.0000,1.0000
+alexnet.l5.fc0,simdram,8.915764e+06,unpadded,8.915764e+06,0.0000,1.0000
+gpt2.lm_head,hbmpim,1.842235e+05,pad_R50400,1.292640e+05,0.0028,1.4252
+gpt2.lm_head,simdram,1.525671e+07,pad_Q800_R50400,9.724932e+06,0.0446,1.5688
+resnet50.conv5,hbmpim,6.588160e+05,unpadded,6.588160e+05,0.0000,1.0000
+resnet50.conv5,simdram,5.628528e+07,pad_K540,3.582118e+07,0.0547,1.5713
+vit.attn_qk,hbmpim,9.475700e+04,unpadded,9.475700e+04,0.0000,1.0000
+vit.attn_qk,simdram,3.935174e+07,pad_P210_R200,7.979796e+06,0.0822,4.9314
+vit.qkv,hbmpim,5.763840e+05,pad_P200,5.477520e+05,0.0152,1.0523
+vit.qkv,simdram,2.577587e+08,pad_P200_R2400,8.962590e+07,0.0575,2.8759
