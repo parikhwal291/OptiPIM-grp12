@@ -83,3 +83,18 @@ fig15: ./exp_results/fig15/fig15.pdf
 # Sample test run of OptiPIM, detailed comfiguration can be found in test.sh
 test:
 	@mkdir Debug; mkdir Result; bash test.sh
+
+#####################################################################################
+# Group 12 Evaluation and Figures (Member 3)
+#####################################################################################
+.PHONY: evaluate figures
+
+evaluate:
+	@source optipim_env/bin/activate 2>/dev/null || true; python3 group12/scripts/evaluate.py
+
+figures: evaluate
+	@source optipim_env/bin/activate 2>/dev/null || true; \
+	bash group12/analysis/rerun.sh . . group12/results/plots; \
+	python3 group12/analysis/plot_fig9_correlation.py; \
+	cp group12/results/plots/*.png group12/report/figs/ 2>/dev/null || true
+
