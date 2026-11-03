@@ -1,0 +1,30 @@
+% Member 2 sections for the IEEEtran report. Paste into the Overleaf project / main.tex.
+
+\subsection{Baseline: Weight-Parallel Heuristic Implementation}
+\label{sec:heuristic}
+To reproduce the authors' baseline without relying on pre-packaged trace files, we implemented the weight-parallel heuristic generator (\texttt{group12/scripts/heuristic.py}) following Section~6.4.1 of the paper. The heuristic targets weight parallelism across three architectural levels:
+\begin{enumerate}
+    \item \textbf{Bank-Level Distribution (Level~2):} Output channels ($K$ for Conv2D, $Q$ for GEMM) are assigned to memory banks first: $K_2 = \min(K, \text{num\_banks})$. For batched matrix multiplication (M2, $N=12$), the batch dimension is distributed across banks first ($N_2=12$), and remaining banks are allocated to output features ($Q_2=2$, using 24 of 32 banks). Crucially, every output accumulation remains strictly local to one bank, eliminating inter-bank reduction latency.
+    \item \textbf{Column-Level Tiling (Level~1):} Remaining output channels map to columns ($K_1 = K / K_2$ or $Q_1 = Q / Q_2$). On HBM-PIM, weights are partitioned to match the 16-element FP16 SIMD lane width ($R_1=16$ for GEMM, $Q_1=4$ for Conv2D). On SIMDRAM, where bit-serial ALUs span entire 8192-column rows (512 FP16 elements), the full output width $Q$ fits across columns ($Q_1=Q, Q_0=1$), and reduction dimensions tile to 256 or 128 elements.
+    \item \textbf{Temporal Streaming (Level~0):} Inputs and reduction loops ($C, R, S$ for Conv2D; sequence length $P$ and reduction $R$ for GEMM) stream sequentially without cross-iteration reuse. Flexible indexing coefficients follow raster-scan order ($c_0=1, c_1=X_0, c_2=X_0 \times X_1$).
+\end{enumerate}
+
+We verified our generator with an automated test suite (\texttt{group12/scripts/check_heuristic.py}) that diffs all ten generated traces against the authors' shipped \texttt{heuristic\_1} files. All ten traces match character-for-character with zero line differences and reproduce the exact analytical costs:
+HBM-PIM C1 (29,546,496), C2 (29,546,496), C3 (3,282,944), M1 (835,584), M2 (614,400);
+SIMDRAM C1 (65,549,429), C2 (36,395,701), C3 (4,053,173), M1 (24,881,280), M2 (7,769,472).
+
+\subsection{Algorithmic Analysis of Baseline Variants: heuristic\_1 vs. heuristic\_2}
+The repository includes two sets of baseline traces (\texttt{heuristic\_1} and \texttt{heuristic\_2}). Comparing them revealed that they are identical for GEMM, but differ in their convolution spatial mapping on SIMDRAM:
+\begin{itemize}
+    \item \textbf{\texttt{heuristic\_1}:} Places filter spatial loops $R, S$ at Level~0 (time) and maps full output width $Q$ across columns ($Q_1=Q, Q_0=1$).
+    \item \textbf{\texttt{heuristic\_2}:} Places spatial loops $R, S$ at Level~1 (columns, $R_1=3, S_1=3$) and splits $Q$ temporally ($Q_0=7, Q_1=4$ for C1; $Q_0=7, Q_1=8$ for C2). This reduces column multiplications, lowering SIMDRAM cost from 65.5M to 52.6M for C1, and from 36.4M to 30.0M for C2.
+\end{itemize}
+We adopt \texttt{heuristic\_1} as our standard baseline to align with the paper's primary reported speedups.
+
+\subsection{Root Cause of OptiPIM's Performance Deficit on HBM-PIM M1}
+On HBM-PIM M1, OptiPIM surprisingly loses to the heuristic (0.78$\times$ speedup; 1,064,960 vs. 835,584 cycles). Inspecting \texttt{lib/Analysis/DataLayout/DataLayoutFC.cpp} revealed two critical bugs in the ILP formulation:
+\begin{enumerate}
+    \item \textbf{Compute Row Activation Undercount:} Line~132 formulates activation cost as $\text{numFilCol} \times \text{rowAct}$ ($96 \times 15 = 1{,}440$ cycles), whereas the ground-truth analytical model (\texttt{analytical.py}) charges $\text{numMulCol} \times \text{rowActLat}$ ($6{,}144 \times 24 = 147{,}456$ cycles), an undercount exceeding 100$\times$.
+    \item \textbf{Input Loading Formulation:} Line~673 uses an unsegmented channel bandwidth formula rather than accounting for HBM-PIM burst length ($\text{numBL}=4$) and DQ bus width ($\text{DQWidth}=128$), which accounts for 524,288 cycles in the analytical model.
+\end{enumerate}
+Consequently, Gurobi optimized a severely distorted objective (9,888 cycles vs. 1,064,960 real cycles), selecting a 24-bank mapping with higher temporal depth that proved inferior to the heuristic's 32-bank allocation.
